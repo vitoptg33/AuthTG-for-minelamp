@@ -1,23 +1,25 @@
 package org.ezhik.authTG;
 
 import org.apache.logging.log4j.LogManager;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SingleLineChart;
 import org.ezhik.authTG.commandMC.*;
 import org.ezhik.authTG.events.*;
 import org.ezhik.authTG.handlers.*;
 import org.ezhik.authTG.migrates.*;
 import org.ezhik.authTG.otherAPI.*;
 import org.ezhik.authTG.tabcompleter.*;
-import org.ezhik.authTG.usersconfiguration.*;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import org.ezhik.authTG.usersconfiguration.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public final class AuthTG extends JavaPlugin {
     public static Loader loader;
@@ -33,13 +37,15 @@ public final class AuthTG extends JavaPlugin {
     public static Logger logger;
     private static Plugin instance;
     private static String version;
-    public static boolean notRegAndLogin, authNecessarily, activeChatinTG;
+    public static boolean notRegAndLogin, authNecessarily, activeChatinTG, bossBarEnabled;
     public static List<String> mutecommands, commandsPreAuthorization, forbiddenNicknames;
     public static int minLenghtNickname, minLenghtPassword, maxLenghtNickname, maxLenghtPassword, timeoutSession,kickTimeout, maxAccountTGCount;
     public static double locationX, locationY, locationZ;
-    public static String world;
+    public static String world, bossBarColor;
     public static ConfigurationSection macro;
-
+    private static BukkitTask handlerTask;
+    private static BukkitTask authHandlerTask;
+    private static TelegramBotsApi botsApi;
     @Override
     public void onEnable() {
         // Init
@@ -57,7 +63,7 @@ public final class AuthTG extends JavaPlugin {
         setupMessages();
         setupConfiguration();
         // Load config parameters
-        loadConfigParameters();
+        this.loadConfigParameters();
         // Logs
         logger.log(Level.INFO, "Plugin started");
         // Load LoggerCore
@@ -72,6 +78,8 @@ public final class AuthTG extends JavaPlugin {
         Bukkit.getServer().getPluginManager().registerEvents(new BlockDamageEvent(), this);
         Bukkit.getServer().getPluginManager().registerEvents(new BlockPlaceBEvent(), this);
         Bukkit.getServer().getPluginManager().registerEvents(new BlockDropBEvent(), this);
+        Bukkit.getServer().getPluginManager().registerEvents(new BlockInteractEvent(), this);
+        Bukkit.getServer().getPluginManager().registerEvents(new BlockInventoryEvent(), this);
         Bukkit.getServer().getPluginManager().registerEvents(new PlayerJoinAnotherEvent(), this);
         Bukkit.getServer().getPluginManager().registerEvents(new onLeaveEvent(), this);
         // Load placeholders
@@ -90,8 +98,8 @@ public final class AuthTG extends JavaPlugin {
         // Load Handlers
         Handler handler = new Handler();
         AuthHandler authHandler = new AuthHandler();
-        authHandler.runTaskTimer(this, 0, 20);
-        handler.runTaskTimer(this, 0, 1);
+        authHandlerTask = authHandler.runTaskTimer(this, 0, 20);
+        handlerTask = handler.runTaskTimer(this, 0, 1);
         // Load UserConfiguration
         if (getConfig().getConfigurationSection("mysql").getBoolean("use")) {
             ConfigurationSection mysql = getConfig().getConfigurationSection("mysql");
@@ -112,24 +120,25 @@ public final class AuthTG extends JavaPlugin {
         getCommand("tgbc").setExecutor(new TGbcCMD());
         getCommand("changepassword").setExecutor(new ChangePasswordCMD());
         getCommand("setpassword").setExecutor(new SetPasswordCMD());
-        getCommand("friend").setExecutor(new FriendCMD());
-        getCommand("setspawn").setExecutor(new SetSpawnCMD());
-        getCommand("admin").setExecutor(new AdminCMD());
+        //getCommand("friend").setExecutor(new FriendCMD());
+        //getCommand("setspawn").setExecutor(new SetSpawnCMD());
+        //getCommand("admin").setExecutor(new AdminCMD());
         getCommand("command").setExecutor(new CommandCMD());
-        getCommand("kick").setExecutor(new KickCMD());
-        getCommand("mute").setExecutor(new MuteCMD());
-        getCommand("ban").setExecutor(new BanCMD());
-        getCommand("unban").setExecutor(new UnBanCMD());
-        getCommand("unmute").setExecutor(new UnMuteCMD());
+        //getCommand("kick").setExecutor(new KickCMD());
+        //getCommand("mute").setExecutor(new MuteCMD());
+        //getCommand("ban").setExecutor(new BanCMD());
+        //getCommand("unban").setExecutor(new UnBanCMD());
+        //getCommand("unmute").setExecutor(new UnMuteCMD());
         getCommand("logout").setExecutor(new LogoutCMD());
         getCommand("unlink").setExecutor(new UnLinkCMD());
+        getCommand("auth").setExecutor(new AuthCMD());
         // Register TabCompleter
-        getCommand("admin").setTabCompleter(new AdminTabCompleter());
-        getCommand("friend").setTabCompleter(new FriendTabCompleter());
+        //getCommand("admin").setTabCompleter(new AdminTabCompleter());
+        //getCommand("friend").setTabCompleter(new FriendTabCompleter());
         getCommand("command").setTabCompleter(new CommandTabCompleter());
-        getCommand("ban").setTabCompleter(new BanTabCompleter());
-        getCommand("mute").setTabCompleter(new MuteTabCompleter());
-        getCommand("setspawn").setTabCompleter(new SetSpawnTabCompleter());
+        //getCommand("ban").setTabCompleter(new BanTabCompleter());
+        //getCommand("mute").setTabCompleter(new MuteTabCompleter());
+        //getCommand("setspawn").setTabCompleter(new SetSpawnTabCompleter());
         // Load MutedPlayers
         MuterEvent.setMutedPlayers(loader.getMutedPlayers());
         // Load Bot
@@ -137,7 +146,6 @@ public final class AuthTG extends JavaPlugin {
         if (bot.getBotToken().equals("changeme") && bot.getBotUsername().equals("changeme")) {
             logger.log(Level.INFO,"Please set your bot token and username in config.yml");
         } else {
-            TelegramBotsApi botsApi;
             try {
                 botsApi = new TelegramBotsApi(DefaultBotSession.class);
                 botsApi.registerBot(bot);
@@ -149,6 +157,9 @@ public final class AuthTG extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Cancel tasks
+        if (authHandlerTask != null) authHandlerTask.cancel();
+        if (handlerTask != null) handlerTask.cancel();
         // Logs
         logger.log(Level.INFO, "Plugin stopped");
     }
@@ -161,7 +172,7 @@ public final class AuthTG extends JavaPlugin {
         return version;
     }
 
-    private void setupConfiguration() {
+    public void setupConfiguration() {
         File fileTemp = new File("plugins/AuthTG/temp-config.yml");
         YamlConfiguration configTemp = YamlConfiguration.loadConfiguration(fileTemp);
         File fileGlobal = new File("plugins/AuthTG/config.yml");
@@ -179,7 +190,7 @@ public final class AuthTG extends JavaPlugin {
         }
         fileTemp.delete();
     }
-    private void setupMessages() {
+    public void setupMessages() {
         File fileTemp = new File("plugins/AuthTG/temp-messages.yml");
         YamlConfiguration configTemp = YamlConfiguration.loadConfiguration(fileTemp);
         File fileGlobal = new File("plugins/AuthTG/messages.yml");
@@ -197,20 +208,32 @@ public final class AuthTG extends JavaPlugin {
         }
         fileTemp.delete();
     }
+    private static String parseColors(String message) {
+        return LegacyComponentSerializer.legacyAmpersand().serialize(MiniMessage.miniMessage().deserialize(message));
+    }
+
     public static String getMessage(String path, String MCorTGorCNS) {
         File file = new File("plugins/AuthTG/messages.yml");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        String message = null;
         if (MCorTGorCNS.equals("MC")) {
-            return config.getString("messages.minecraft." + path).replace("{BR}", "\n");
+            message = config.getString("messages.minecraft." + path);
+            if (message != null) {
+                return parseColors(message.replace("{BR}", "\n"));
+            }
         } else if (MCorTGorCNS.equals("TG")) {
-            return config.getString("messages.telegram." + path).replace("{BR}", "\n");
+            message = config.getString("messages.telegram." + path);
+            if (message != null) {
+                return message.replace("{BR}", "\n");
+            }
         } else if (MCorTGorCNS.equals("CE")) {
-            return config.getString("messages.minecraft." + path).replace("{BR}", "\n");
+            message = config.getString("messages.minecraft." + path);
+            if (message != null) {
+                return parseColors(message.replace("{BR}", "\n"));
+            }
         }
-        else {
-            logger.log(Level.SEVERE, "Message path not found, please contact the developer");
-            return null;
-        }
+        logger.log(Level.SEVERE, "Message path not found: " + path + ", using default");
+        return null;
     }
 
     public static String getPlaceholderMessage(String placeholder, String path) {
@@ -230,12 +253,14 @@ public final class AuthTG extends JavaPlugin {
         }
     }
 
-    private void loadConfigParameters() {
+    public void loadConfigParameters() {
         maxAccountTGCount = getConfig().getInt("maxAccountTGCount");
         forbiddenNicknames = getConfig().getStringList("forbiddenNicknames");
         notRegAndLogin = getConfig().getBoolean("notRegAndLogin");
         authNecessarily = getConfig().getBoolean("authNecessarily");
         activeChatinTG = getConfig().getBoolean("activeChatinTG");
+        bossBarEnabled = getConfig().getBoolean("bossbar.enabled", true);
+        bossBarColor = getConfig().getString("bossbar.color", "RED");
         mutecommands = getConfig().getStringList("mutecommands");
         commandsPreAuthorization = getConfig().getStringList("commandsPreAuthorization");
         minLenghtNickname = getConfig().getInt("minLenghtNickname");

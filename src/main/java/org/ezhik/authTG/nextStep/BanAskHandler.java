@@ -80,6 +80,6 @@ public class BanAskHandler implements NextStepHandler {
         user.sendMessage(adminmsg);
         AuthTG.loader.setBanTime(user1.uuid, formattedDate, reason, time, user.playername);
         AuthTG.bot.remNextStepHandler(update.getMessage().getChatId());
-        if (user1.player != null) Handler.kick(user1.playername, ChatColor.translateAlternateColorCodes('&',message));
+        if (user1.player != null) Handler.kick(user1.playername, message);
     }
 }

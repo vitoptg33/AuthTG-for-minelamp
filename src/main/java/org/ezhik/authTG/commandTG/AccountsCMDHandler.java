@@ -16,8 +16,19 @@ import java.util.logging.Level;
 public class AccountsCMDHandler implements CommandHandler{
     @Override
     public void execute(Update update) {
+        Long chatId;
+        String command;
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId();
+            command = update.getMessage().getText();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            command = "/" + update.getCallbackQuery().getData().split("_")[1];
+        } else {
+            return;
+        }
         InlineKeyboardMarkup players = new InlineKeyboardMarkup();
-        List<UUID> uuids = AuthTG.loader.getPlayerNames(update.getMessage().getChatId());
+        List<UUID> uuids = AuthTG.loader.getPlayerNames(chatId);
         if (uuids != null) {
             List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
             for (UUID uuid : uuids) {
@@ -31,7 +42,7 @@ public class AccountsCMDHandler implements CommandHandler{
             }
             players.setKeyboard(keyboard);
             SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(update.getMessage().getChatId());
+            sendMessage.setChatId(chatId);
             sendMessage.setText(AuthTG.getMessage("accountschange", "TG"));
             sendMessage.setReplyMarkup(players);
             try {
@@ -40,7 +51,7 @@ public class AccountsCMDHandler implements CommandHandler{
                 AuthTG.logger.log(Level.SEVERE, "Error while sending message", e);
             }
         } else {
-            AuthTG.bot.sendMessage(update.getMessage().getChatId(), AuthTG.getMessage("accounschangenotfound", "TG"));
+            AuthTG.bot.sendMessage(chatId, AuthTG.getMessage("accounschangenotfound", "TG"));
         }
 
     }

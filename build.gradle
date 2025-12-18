@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'org.ezhik'
+version = '2.4.1'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://oss.sonatype.org/content/groups/public/' }
+    maven { url 'https://repo.extendedclip.com/releases/' }
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.mysql:mysql-connector-j:9.0.0'
+    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    implementation 'org.telegram:telegrambots:6.7.0'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
+    implementation 'org.apache.logging.log4j:log4j-1.2-api:2.11.0'
+    implementation 'org.bstats:bstats-bukkit:3.0.2'
+    implementation 'net.kyori:adventure-text-minimessage:4.17.0'
+    compileOnly 'net.kyori:adventure-platform-bukkit:4.3.2'
+}
+
+jar {
+    enabled = false
+}
+
+shadowJar {
+    archiveClassifier.set("")
+    relocate 'org.bstats', 'org.ezhik.authTG'
+}
+
+processResources {
+    expand(project.properties)
+}

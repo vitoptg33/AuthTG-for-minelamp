@@ -71,6 +71,9 @@ public class LoginCMD implements CommandExecutor {
                 LocalDateTime time = LocalDateTime.now().plusMinutes(AuthTG.timeoutSession);
                 IPManager.addAuthorized(player.getUniqueId(), player.getAddress().getAddress().toString(),time);
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("loginsuccess", "MC")));
+                if (!user.activetg) {
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("accnotactivetg", "MC")));
+                }
                 FreezerEvent.unfreezeplayer(player.getName());
                 if (FreezerEvent.beforeFreeze.containsKey(player.getName())) {
                     Handler.teleport(player.getName(), FreezerEvent.beforeFreeze.get(player.getName()));

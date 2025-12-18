@@ -168,6 +168,8 @@ messages: # Сообщения EN: Messages
     forbiddennickname: "&cУ вас запрещенный никнейм,поменять его!"
     logout: '&cВы вышли из аккаунта!'
     kicktimeout: 'Время на авторизацию истекло!'
+    bossbar:
+      title: '&cВремя на авторизацию: {SECONDS} сек'
     unbannoperm: '&c&l[AuthTG] &cУ вас нет прав!'
     unbanusage: '&c&l[AuthTG] &cВы не указали ник!'
     unbannotfound: '&c&l[AuthTG] &cИгрок не найден!'

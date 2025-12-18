@@ -18,21 +18,32 @@ public class CommandCMDHandler implements CommandHandler {
     public static Map<Long, List<String>> commands = new HashMap<>();
     @Override
     public void execute(Update update) {
-        User user = User.getCurrentUser(update.getMessage().getChatId());
+        Long chatId;
+        String command;
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId();
+            command = update.getMessage().getText();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            command = "/" + update.getCallbackQuery().getData().split("_")[1];
+        } else {
+            return;
+        }
+        User user = User.getCurrentUser(chatId);
         if (user == null) {
-            AuthTG.bot.sendMessage(update.getMessage().getChatId(), AuthTG.getMessage("cmdnull", "TG"));
+            AuthTG.bot.sendMessage(chatId, AuthTG.getMessage("cmdnull", "TG"));
             return;
         }
         if (!user.activetg) {
-            AuthTG.bot.sendMessage(update.getMessage().getChatId(), AuthTG.getMessage("cmdnotactive", "TG"));
+            AuthTG.bot.sendMessage(chatId, AuthTG.getMessage("cmdnotactive", "TG"));
             return;
         }
-        commands.remove(update.getMessage().getChatId());
+        commands.remove(chatId);
         if (!user.isadmin) {
             user.sendMessage(AuthTG.getMessage("cmdnotadmin", "TG"));
             return;
         }
-        String[] args = update.getMessage().getText().split(" ");
+        String[] args = command.split(" ");
         if (args.length == 1) {
             List<List<InlineKeyboardButton>> commands = new ArrayList<>();
             List<InlineKeyboardButton> buttons = new ArrayList<>();
@@ -52,7 +63,7 @@ public class CommandCMDHandler implements CommandHandler {
             InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
             inlineKeyboardMarkup.setKeyboard(commands);
             SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(update.getMessage().getChatId());
+            sendMessage.setChatId(chatId);
             sendMessage.setText(AuthTG.getMessage("cmdfirst", "TG"));
             sendMessage.setReplyMarkup(inlineKeyboardMarkup);
             try {

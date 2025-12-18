@@ -9,10 +9,21 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class UnLinkCMDHandler implements CommandHandler {
     @Override
     public void execute(Update update) {
-        if (AuthTG.notRegAndLogin) {
-            AuthTG.bot.deleteMessage(update.getMessage());
+        Long chatId;
+        String command;
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId();
+            command = update.getMessage().getText();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            command = "/" + update.getCallbackQuery().getData().split("_")[1];
         } else {
-            User user = User.getCurrentUser(update.getMessage().getChatId());
+            return;
+        }
+        if (AuthTG.notRegAndLogin) {
+            if (update.hasMessage()) AuthTG.bot.deleteMessage(update.getMessage());
+        } else {
+            User user = User.getCurrentUser(chatId);
             if (user != null) {
                 String code = User.generateConfirmationCode();
                 if (user.player != null) {
@@ -23,7 +34,7 @@ public class UnLinkCMDHandler implements CommandHandler {
                     user.sendMessage(AuthTG.getMessage("unlinkplntonline", "TG"));
                 }
             } else {
-                AuthTG.bot.sendMessage(update.getMessage().getChatId(), AuthTG.getMessage("unlinknotactive", "TG"));
+                AuthTG.bot.sendMessage(chatId, AuthTG.getMessage("unlinknotactive", "TG"));
             }
         }
     }

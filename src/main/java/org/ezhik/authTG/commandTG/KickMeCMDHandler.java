@@ -8,7 +8,18 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class KickMeCMDHandler implements CommandHandler {
     @Override
     public void execute(Update update) {
-        User user = User.getCurrentUser(update.getMessage().getChatId());
+        Long chatId;
+        String command;
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId();
+            command = update.getMessage().getText();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            command = "/" + update.getCallbackQuery().getData().split("_")[1];
+        } else {
+            return;
+        }
+        User user = User.getCurrentUser(chatId);
         if (user != null) {
             if (user.player != null) {
                 Handler.kick(user.playername, AuthTG.getMessage("kickmeplayer", "TG"));
@@ -17,7 +28,7 @@ public class KickMeCMDHandler implements CommandHandler {
                 user.sendMessage(AuthTG.getMessage("kickmeplnotonline", "TG"));
             }
         } else {
-            AuthTG.bot.sendMessage(update.getMessage().getChatId(),AuthTG.getMessage("kickmenotactive", "TG"));
+            AuthTG.bot.sendMessage(chatId,AuthTG.getMessage("kickmenotactive", "TG"));
         }
     }
 }

@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Handler extends BukkitRunnable {
@@ -16,41 +17,49 @@ public class Handler extends BukkitRunnable {
     @Override
     public void run() {
         if (kickplayers.size() != 0) {
-            for(String name : kickplayers.keySet()) {
+            Iterator<String> it = kickplayers.keySet().iterator();
+            while (it.hasNext()) {
+                String name = it.next();
                 Player player = Bukkit.getPlayer(name);
                 if(player == null) {
-                    kickplayers.remove(name);
+                    it.remove();
                 } else {
                     player.kickPlayer(kickplayers.get(name));
-                    kickplayers.remove(name);
+                    it.remove();
                 }
             }
         }
         if (minecrfatmsg.size() != 0) {
-            for(String name : minecrfatmsg.keySet()) {
+            Iterator<String> it = minecrfatmsg.keySet().iterator();
+            while (it.hasNext()) {
+                String name = it.next();
                 Player player = Bukkit.getPlayer(name);
                 if(player == null) {
-                    minecrfatmsg.remove(name);
+                    it.remove();
                 } else {
                     player.chat(minecrfatmsg.get(name));
-                    minecrfatmsg.remove(name);
+                    it.remove();
                 }
             }
         }
         if (dispatcCommand.size() != 0) {
-            for(String name : dispatcCommand.keySet()) {
+            Iterator<String> it = dispatcCommand.keySet().iterator();
+            while (it.hasNext()) {
+                String name = it.next();
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), dispatcCommand.get(name));
-                dispatcCommand.remove(name);
+                it.remove();
             }
         }
         if (locationMap.size() != 0) {
-            for(String name : locationMap.keySet()) {
+            Iterator<String> it = locationMap.keySet().iterator();
+            while (it.hasNext()) {
+                String name = it.next();
                 Player player = Bukkit.getPlayer(name);
                 if(player == null) {
-                    locationMap.remove(name);
+                    it.remove();
                 } else {
                     player.teleport(locationMap.get(name));
-                    locationMap.remove(name);
+                    it.remove();
                 }
             }
         }

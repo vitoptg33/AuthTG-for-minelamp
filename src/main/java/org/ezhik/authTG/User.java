@@ -93,7 +93,7 @@ public class User {
         AuthTG.loader.setPlayerNames(message.getChatId(), uuid);
         String code = generateConfirmationCode();
         AuthTG.bot.sendMessage(message.getChatId(), AuthTG.getMessage("codemsgactivated", "TG").replace("{CODE}", code));
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("codemsgactivated", "MC")));
+        player.sendMessage(AuthTG.getMessage("codemsgactivated", "MC"));
         CodeCMD.code.put(uuid, code);
     }
 

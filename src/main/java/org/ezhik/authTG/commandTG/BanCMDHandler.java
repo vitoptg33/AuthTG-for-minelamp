@@ -13,16 +13,27 @@ import java.time.format.DateTimeFormatter;
 public class BanCMDHandler implements CommandHandler {
     @Override
     public void execute(Update update) {
-        User user = User.getCurrentUser(update.getMessage().getFrom().getId());
+        Long chatId;
+        String command;
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId();
+            command = update.getMessage().getText();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            command = "/" + update.getCallbackQuery().getData().split("_")[1];
+        } else {
+            return;
+        }
+        User user = User.getCurrentUser(chatId);
         if (!user.activetg) {
-            AuthTG.bot.sendMessage(update.getMessage().getChatId(), AuthTG.getMessage("bannoactivetg", "TG"));
+            AuthTG.bot.sendMessage(chatId, AuthTG.getMessage("bannoactivetg", "TG"));
             return;
         }
         if (user.isadmin || user.commands != null && user.commands.contains("ban")) {
-            String[] args = update.getMessage().getText().split(" ");
+            String[] args = command.split(" ");
             if (args.length < 2) {
                 user.sendMessage(AuthTG.getMessage("ban", "TG"));
-                AuthTG.bot.setNextStepHandler(update.getMessage().getChatId(), new BanAskHandler());
+                AuthTG.bot.setNextStepHandler(chatId, new BanAskHandler());
             } else {
                 if (args.length < 4) {
                     user.sendMessage(AuthTG.getMessage("banusage", "TG"));

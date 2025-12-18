@@ -8,15 +8,26 @@ public class TFoffCMDHandler implements CommandHandler{
 
     @Override
     public void execute(Update update) {
-        if (AuthTG.authNecessarily || AuthTG.notRegAndLogin) {
-            AuthTG.bot.deleteMessage(update.getMessage());
+        Long chatId;
+        String command;
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId();
+            command = update.getMessage().getText();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            command = "/" + update.getCallbackQuery().getData().split("_")[1];
         } else {
-            User user = User.getCurrentUser(update.getMessage().getChatId());
+            return;
+        }
+        if (AuthTG.authNecessarily || AuthTG.notRegAndLogin) {
+            if (update.hasMessage()) AuthTG.bot.deleteMessage(update.getMessage());
+        } else {
+            User user = User.getCurrentUser(chatId);
             if (user != null) {
                 AuthTG.loader.setTwofactor(user.uuid, false);
                 user.sendMessage(AuthTG.getMessage("tfoffsuccess", "TG"));
             } else {
-                AuthTG.bot.sendMessage(update.getMessage().getChatId(), AuthTG.getMessage("tfoffntactive", "TG"));
+                AuthTG.bot.sendMessage(chatId, AuthTG.getMessage("tfoffntactive", "TG"));
             }
         }
     }

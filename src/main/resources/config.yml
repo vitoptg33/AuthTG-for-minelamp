@@ -32,5 +32,8 @@ spawn: # Спавн EN: Spawn
   y: 0
   z: 0
   world: "none"
+bossbar: # Босс бар EN: Boss bar
+  enabled: true # Включен ли босс бар EN: Is boss bar enabled
+  color: "RED" # Цвет босс бара EN: Boss bar color
 onceUsed: # НЕ ТРОГАЙТЕ ЭТО EN: Do not touch
   mysql: false

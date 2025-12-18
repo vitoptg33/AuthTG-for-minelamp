@@ -25,25 +25,27 @@ commands:
       - cp
   setpassword:
     description: 'Set password'
-  friend:
-    description: 'Friends'
-  setspawn:
-    description: 'Set spawn'
-  admin:
-    description: 'AdminCMD'
+  #friend:
+    #description: 'Friends'
+  #setspawn:
+    #description: 'Set spawn'
+  #admin:
+    #description: 'AdminCMD'
   command:
     description: 'CommandCMD'
-  kick:
-    description: 'Kick player'
-  mute:
-    description: 'Mute player'
-  ban:
-    description: 'Ban player'
-  unban:
-    description: 'Unban player'
-  unmute:
-    description: 'Unmute player'
+  #kick:
+    #description: 'Kick player'
+  #mute:
+    #description: 'Mute player'
+  #ban:
+    #description: 'Ban player'
+  #unban:
+    #description: 'Unban player'
+  #unmute:
+    #description: 'Unmute player'
   logout:
     description: 'Logout'
   unlink:
     description: 'Unlink'
+  auth:
+    description: 'Auth commands'

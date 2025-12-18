@@ -25,14 +25,14 @@ public class OnJoinEvent implements Listener {
         if (AuthTG.loader.getBanTime(p.getUniqueId()) != null) {
             if (AuthTG.loader.getBanTime(p.getUniqueId()).equals("0")) {
                 event.setJoinMessage(null);
-                Handler.kick(p.getName(), ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("ban", "MC")).replace("{REASON}", AuthTG.loader.getBanReason(p.getUniqueId())).replace("{TIMEBAN}", "навсегда").replace("{TIME}",AuthTG.loader.getBanTimeAdmin(p.getUniqueId())).replace("{ADMIN}", AuthTG.loader.getBanAdmin(p.getUniqueId())));
+                Handler.kick(p.getName(), AuthTG.getMessage("ban", "MC").replace("{REASON}", AuthTG.loader.getBanReason(p.getUniqueId())).replace("{TIMEBAN}", "навсегда").replace("{TIME}",AuthTG.loader.getBanTimeAdmin(p.getUniqueId())).replace("{ADMIN}", AuthTG.loader.getBanAdmin(p.getUniqueId())));
                 return;
             }
             LocalDateTime date1 = LocalDateTime.parse(AuthTG.loader.getBanTime(p.getUniqueId()), DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy"));
             if (date.isAfter(date1)) AuthTG.loader.deleteBan(p.getUniqueId());
             else  {
                 event.setJoinMessage(null);
-                Handler.kick(p.getName(), ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("ban", "MC")).replace("{REASON}", AuthTG.loader.getBanReason(p.getUniqueId())).replace("{TIMEBAN}", AuthTG.loader.getBanTime(p.getUniqueId())).replace("{TIME}",AuthTG.loader.getBanTimeAdmin(p.getUniqueId())).replace("{ADMIN}", AuthTG.loader.getBanAdmin(p.getUniqueId())));
+                Handler.kick(p.getName(), AuthTG.getMessage("ban", "MC").replace("{REASON}", AuthTG.loader.getBanReason(p.getUniqueId())).replace("{TIMEBAN}", AuthTG.loader.getBanTime(p.getUniqueId())).replace("{TIME}",AuthTG.loader.getBanTimeAdmin(p.getUniqueId())).replace("{ADMIN}", AuthTG.loader.getBanAdmin(p.getUniqueId())));
             }
         }
         if (IPManager.isAuthorized(p)) {
@@ -51,10 +51,10 @@ public class OnJoinEvent implements Listener {
             FreezerEvent.freezeplayer(p, loc);
         }
         if (AuthTG.forbiddenNicknames.contains(p.getName())) {
-            Handler.kick(p.getName(), ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("forbiddennickname", "MC")));
+            Handler.kick(p.getName(), AuthTG.getMessage("forbiddennickname", "MC"));
         }
         if (p.getName().length() < AuthTG.minLenghtNickname || p.getName().length() > AuthTG.maxLenghtNickname) {
-            Handler.kick(p.getName(), ChatColor.translateAlternateColorCodes('&',AuthTG.getMessage("nicknamelenght", "MC").replace("{MIN}", String.valueOf(AuthTG.minLenghtNickname)).replace("{MAX}", String.valueOf(AuthTG.maxLenghtNickname))));
+            Handler.kick(p.getName(), AuthTG.getMessage("nicknamelenght", "MC").replace("{MIN}", String.valueOf(AuthTG.minLenghtNickname)).replace("{MAX}", String.valueOf(AuthTG.maxLenghtNickname)));
         }
         if (AuthTG.kickTimeout != 0) {
             AuthHandler.setTimeout(p.getUniqueId(), AuthTG.kickTimeout);
@@ -64,20 +64,20 @@ public class OnJoinEvent implements Listener {
         }
         else if (AuthTG.notRegAndLogin && AuthTG.authNecessarily) {
             if (user != null && user.activetg) {
-                MuterEvent.mute(p.getName(), ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("joininaccounttext", "MC")));
-                p.sendTitle(ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("joininaccounts1", "MC")), AuthTG.getMessage("joininaccounts2", "MC"), 20, 10000000, 0);
+                MuterEvent.mute(p.getName(), AuthTG.getMessage("joininaccounttext", "MC"));
+                p.sendTitle(AuthTG.getMessage("joininaccounts1", "MC"), AuthTG.getMessage("joininaccounts2", "MC"), 20, 10000000, 0);
                 user.sendLoginAccepted(AuthTG.getMessage("loginaccept", "TG").replace("{PLAYER}", user.playername).replace("{IP}", p.getAddress().getAddress().toString().replace("/", "")));
             } else {
-                MuterEvent.mute(p.getName(), ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("authtgactivetext", "MC")));
-                p.sendTitle(ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("authtgactives1", "MC")), AuthTG.getMessage("authtgactives2", "MC"), 20, 10000000, 0);
+                MuterEvent.mute(p.getName(), AuthTG.getMessage("authtgactivetext", "MC"));
+                p.sendTitle(AuthTG.getMessage("authtgactives1", "MC"), AuthTG.getMessage("authtgactives2", "MC"), 20, 10000000, 0);
             }
         } else {
             if (user != null) {
-                MuterEvent.mute(p.getName(), ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("loginmessage", "MC")));
-                p.sendTitle(ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("logintitles1", "MC")), AuthTG.getMessage("logintitles2", "MC"), 20, 10000000, 0);
+                MuterEvent.mute(p.getName(), AuthTG.getMessage("loginmessage", "MC"));
+                p.sendTitle(AuthTG.getMessage("logintitles1", "MC"), AuthTG.getMessage("logintitles2", "MC"), 20, 10000000, 0);
             } else {
-                MuterEvent.mute(p.getName(), ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("registermessage", "MC")));
-                p.sendTitle(ChatColor.translateAlternateColorCodes('&', AuthTG.getMessage("registertitles1", "MC")), AuthTG.getMessage("registertitles2", "MC"), 20, 10000000, 0);
+                MuterEvent.mute(p.getName(), AuthTG.getMessage("registermessage", "MC"));
+                p.sendTitle(AuthTG.getMessage("registertitles1", "MC"), AuthTG.getMessage("registertitles2", "MC"), 20, 10000000, 0);
             }
         }
     }

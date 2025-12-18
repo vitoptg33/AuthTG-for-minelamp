@@ -26,6 +26,7 @@ public class BotTelegram extends TelegramLongPollingBot {
     private Map<String, UUID> userData = new HashMap<>();
     private Map<Long, NextStepHandler> nextStepHandler = new HashMap<>();
     private Map<String, CallbackQueryHandler> callbackQueryHandler = new HashMap<>();
+    private Map<Long, Integer> lastMessageId = new HashMap<>();
 
     public BotTelegram(String token, String username) {
         this.username = username;
@@ -38,13 +39,7 @@ public class BotTelegram extends TelegramLongPollingBot {
         commandHandler.put("/accounts", new AccountsCMDHandler());
         commandHandler.put("/unlink", new UnLinkCMDHandler());
         commandHandler.put("/kickme", new KickMeCMDHandler());
-        commandHandler.put("/friends", new FriendCMDHandler());
-        commandHandler.put("/kick", new KickCMDHandler());
-        commandHandler.put("/ban", new BanCMDHandler());
-        commandHandler.put("/mute", new MuteCMDHandler());
         commandHandler.put("/command", new CommandCMDHandler());
-        commandHandler.put("/unban", new UnbanCMDHandler());
-        commandHandler.put("/unmute", new UnmuteCMDHandler());
         callbackQueryHandler.put("ys", new LoginAcceptedYes());
         callbackQueryHandler.put("no", new LoginAcceptedNo());
         callbackQueryHandler.put("acc", new AccAccounts());
@@ -107,16 +102,34 @@ public class BotTelegram extends TelegramLongPollingBot {
         }
         if (update.hasCallbackQuery()) {
             String[] str = update.getCallbackQuery().getData().toString().split("_");
-            callbackQueryHandler.get(str[0]).execute(update);
+            if (str[0].equals("cmd")) {
+                String command = "/" + str[1];
+                if (commandHandler.containsKey(command)) {
+                    commandHandler.get(command).execute(update);
+                }
+            } else if (callbackQueryHandler.containsKey(str[0])) {
+                callbackQueryHandler.get(str[0]).execute(update);
+            }
         }
     }
 
     public void sendMessage(Long Chatid, String message) {
+        if (lastMessageId.containsKey(Chatid)) {
+            DeleteMessage dm = new DeleteMessage();
+            dm.setChatId(Chatid);
+            dm.setMessageId(lastMessageId.get(Chatid));
+            try {
+                execute(dm);
+            } catch (TelegramApiException e) {
+                AuthTG.logger.log(Level.SEVERE ,"Error deleting message: " + e);
+            }
+        }
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(Chatid);
         sendMessage.setText(message);
         try {
-            execute(sendMessage);
+            Message sent = execute(sendMessage);
+            lastMessageId.put(Chatid, sent.getMessageId());
         } catch (TelegramApiException e) {
             AuthTG.logger.log(Level.SEVERE ,"Error sending message: " + e);
         }
